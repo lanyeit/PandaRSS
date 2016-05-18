@@ -1,4 +1,4 @@
-＃!/usr/bin/env python
+#!/usr/bin/env python
 
 __version__ = 'lanye-self v1.6.1'
 __license__ = 'AGPL'
