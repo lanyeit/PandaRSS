@@ -249,10 +249,14 @@ def verify_order():
     params = request.params
     isok = alipay.notify_verify(params)
     if isok:
-        apiresp = trapi.customer_payok(order_id=params.get('out_trade_no'))
-        if apiresp['code'] > 0:
-            logger.info(apiresp['msg'])
-            return abort(400,apiresp['msg'])
+        apiresp = trapi.account_renew(params.get('out_trade_no'),pay_status="1")
+        if apiresp['code'] == 0:
+            return 'success'
+        else:
+            apiresp = trapi.customer_payok(order_id=params.get('out_trade_no'))
+            if apiresp['code'] > 0:
+                logger.info(apiresp['msg'])
+                return abort(400,apiresp['msg'])
         return 'success'
     else:
         logger.info(u"订单无效")
@@ -271,16 +275,6 @@ def alipay_return():
         if order:
             account = order.get("account_number")
     return render('alipay_return',params=request.params,account=account)
-
-
-@app.route('/product')
-def product():
-    apiresp = trapi.product_list()
-    if apiresp['code'] > 0:
-        return abort(400,apiresp['msg'])
-    else:
-        products=(p for p in apiresp['products'] if p['product_policy'] not in [6])
-        return render('product',products=products,payfunc=alipay.create_direct_pay_by_user)
 
 ################################################################################
 # customer order new
@@ -351,7 +345,7 @@ def product():
     else:
         products=(p for p in apiresp['products'] if p['product_policy'] not in [6])
         return render('product',products=products,payfunc=alipay.create_direct_pay_by_user)
-        
+
 ################################################################################
 # application running
 ################################################################################
@@ -360,24 +354,13 @@ def product():
 
 
 def main():
-    host = app.config['system.host']
     port = int(app.config['system.port'])
-    run(app,host=host, port=port, debug=True,reloader=False)
+    run(app,host='localhost', port=port, debug=True,reloader=False)
 
 def txrun():
-    host = app.config['system.host']
     port = int(app.config['system.port'])
-    run(app,host=host, port=port, debug=True,reloader=False,server='twisted')
+    run(app,host='localhost', port=port, debug=True,reloader=False,server='twisted')
 
 if __name__ == '__main__':
     logger.debug("start pandarss")
     main()
-
-
-
-
-
-
-
-
-
